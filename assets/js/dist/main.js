@@ -9,7 +9,7 @@ exports.default = void 0;
 class WebGLSculpture {
   constructor(canvas) {
     this.canvas = canvas;
-    this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
+    this.camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 1, 2000);
     this.animate = this.animate.bind(this);
     this.render = this.render.bind(this);
     this.onWindowResize = this.onWindowResize.bind(this);
@@ -28,13 +28,25 @@ class WebGLSculpture {
     this.controls = new THREE.OrbitControls(this.camera);
     this.renderer = new THREE.WebGLRenderer({
       canvas: this.canvas,
-      antialias: true
+      antialias: true,
+      alpha: true
     });
+    this.geo = new THREE.PlaneBufferGeometry(2000, 2000, 8, 8);
+    this.mat = new THREE.MeshNormalMaterial({
+      wireframeLinewidth: 10,
+      wireframe: true
+    });
+    this.plane = new THREE.Mesh(this.geo, this.mat);
+    this.scene.add(this.plane);
+    this.plane.rotateX(-Math.PI / 2);
+    this.plane.receiveShadow = true;
+    this.ambientLight.castShadow = true;
+    this.pointLight.castShadow = true;
     this.mouseX = 0;
     this.mouseY = 0;
     this.windowHalfX = window.innerWidth / 2;
     this.windowHalfY = window.innerHeight / 2;
-    this.camera.position.z = 25;
+    this.camera.position.set(0, 50, 20);
     this.scene.add(this.ambientLight);
     this.camera.add(this.pointLight);
     this.scene.add(this.camera);
@@ -58,12 +70,13 @@ class WebGLSculpture {
       object.traverse(child => {
         if (child instanceof THREE.Mesh) {
           child.material.map = texture;
+          child.castShadow = true;
         }
       });
-      object.position.set(0, 0, 0);
+      scene.add(object);
+      object.position.set(0, 20, 0);
       object.rotateY(Math.PI / 2);
       object.rotateX(-(Math.PI / 2));
-      scene.add(object);
     }, onProgress, onError);
     this.controls.addEventListener('change', this.render);
     this.controls.enableKeys = true;
